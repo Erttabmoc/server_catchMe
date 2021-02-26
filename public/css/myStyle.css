@@ -1,0 +1,102 @@
+body {
+  background: white;
+}
+
+h1 {
+  width: auto;
+  background: #0085c6;
+  padding: 2px;
+  border-radius: 10px;
+  border: solid 6px #00458d;
+  color: white;
+  font-size: 25px;
+  text-align: center;
+}
+
+#myWord {
+  width: auto;
+  background: white;
+  padding: 2px;
+  border-radius: 10px;
+  border: solid 5px #dadada;
+  color: rgb(49, 51, 223);
+  font-size: 25px;
+  font-style: italic;
+  text-align: center;
+}
+
+#score {
+  width: auto;
+  background: #00458d;
+  padding: 2px;
+  border-radius: 10px;
+  border: solid 5px #0085c6;
+  color: white;
+  font-size: 20px;
+  text-align: center;
+}
+
+.game {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  background: rgb(72 213 187);
+  display: block;
+  border: solid 5px #0085c6;
+  border-radius: 10px;
+}
+
+#restart {
+  width: 100px;
+  margin-left: 30px;
+}
+
+#restart:hover {
+  transform: scale(1.1);
+}
+
+.catchMe {
+  text-align: center;
+}
+
+#skills {
+  width: auto;
+  background: white;
+  padding: 5px;
+  border-radius: 10px;
+  border: solid 5px #dadada;
+  color: darkgrey;
+  font-size: 20px;
+  text-align: center;
+}
+
+#looser {
+  width: auto;
+  background: white;
+  padding-bottom: 10px;
+  border-radius: 10px;
+  border: solid 5px #dadada;
+  color: darkgrey;
+  font-size: 20px;
+  text-align: center;
+}
+
+button {
+  background: #00458d;
+  border-radius: 5px;
+  border: solid 5px #0085c6;
+  color: white;
+  font-size: 20px;
+  padding: 5px;
+  margin-bottom: 5px;
+  font-family: "Times New Roman";
+}
+
+#looser > p {
+  padding-bottom: 10px;
+  margin-bottom: 0;
+  margin-top: 10px;
+}

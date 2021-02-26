@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>IFOCOP JEU CV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="css/myStyle.css" />
+    <script src="http://localhost:8080/socket.io/socket.io.min.js"></script>
+  </head>
+
+  <body>
+    <h1>Bienvenue sur ma page de présentation de mon CV</h1>
+
+    <p id="myWord">
+      Knowing is not enough, we must apply. Willing is not enough, we must do.
+    </p>
+
+    <div class="catchMe">
+      <img src="img/catchMe.png" alt="Logo showing CatchMe" />
+    </div>
+
+    <p id="score">
+      Cliquez sur la boule et déplacer la pour éviter la collision avec les
+      boules rouges qui vont apparaître successivement.
+    </p>
+
+    <div class="game">
+      <canvas id="myCanvas"></canvas>
+      <div>
+        <img id="restart" src="img/restart.jpg" alt="A restart button" />
+      </div>
+    </div>
+
+    <p id="skills">Je suis totalement novice...</p>
+
+    <div id="looser">
+      <p>
+        Oseriez-vous vous confronter à mon jeu ?<br />Vous avez toujours le
+        choix de visualiser en ligne ou télécharger mon CV :)
+      </p>
+      <button id="button">Cliquez ici</button>
+      <div>
+        <a href="misc/20201110_CV.pdf" download>Téléchargement</a>
+      </div>
+    </div>
+
+    <script src="js/myScript.js"></script>
+    <noscript>Veuillez activer JavaScript</noscript>
+  </body>
+</html>
