@@ -21,7 +21,7 @@ server.listen(PORT, function () {
 let players = {};
 
 io.on("connection", (socket) => {
-  console.log("Made socket connection", socket.id);
+  console.log("socket.connected", socket.connected);
 
   players[socket.id] = {
     id: socket.id,
@@ -38,8 +38,6 @@ io.on("connection", (socket) => {
       ")",
   };
 
-  console.log("players", players);
-
   socket.on("disconnect", function () {
     console.log(`Player ${socket.id} disconnected`);
     delete players[socket.id];
@@ -49,17 +47,20 @@ io.on("connection", (socket) => {
   // setInterval(updatePosition, 1000 / 60);
 
   function updatePosition() {
-    io.emit("playersOn", Object.values(players));
+    let playersList = Object.values(players);
+    io.emit("playersOn", playersList);
+    console.log("players {}", players);
+    console.log("playersList", playersList);
   }
 
   socket.on("playerCliked", (playersFromClient) => {
     console.log("playerFromClient", playersFromClient);
-    players = playersFromClient;
+    io.emit("playersUpdate", playersFromClient);
   });
 
   socket.on("mouseMoved", (playersFromClient) => {
     console.log("playerFromClient", playersFromClient);
-    players = playersFromClient;
+    io.emit("playersMoved", playersFromClient);
   });
 
   socket.on("startGame", () => {
