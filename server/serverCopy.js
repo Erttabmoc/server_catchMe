@@ -26,8 +26,8 @@ io.on("connection", (socket) => {
 
   // Register new player
   playersData[socket.id] = {
-    x: 560,
-    y: 360,
+    x: 580,
+    y: 380,
     color:
       "rgb(" +
       Math.floor(Math.random() * 255) +
@@ -38,24 +38,25 @@ io.on("connection", (socket) => {
       ")",
     radius: 15,
   };
-
+  console.log(playersData[socket.id]);
+  updatePosition();
   // Delete disconnected player
   socket.on("disconnect", function () {
     delete playersData[socket.id];
   });
 
   function updatePosition() {
-    io.volatile.emit("playersOn", Object.values(playersData));
+    socket.emit("playersOn", Object.values(playersData));
   }
 
-  setInterval(updatePosition, 1000 / 60);
+  // setInterval(updatePosition, 1000 / 60);
 
   io.on("connection", function (socket) {
     socket.on("mouseMoved", function () {
-      playersData[socket.id].x =
-        e.pageX - canvas.offsetLeft - playersData[socket.id].radius / 2;
-      playersData[socket.id].y =
-        e.pageY - canvas.offsetTop - playersData[socket.id].radius / 2;
+      // playersData[socket.id].x =
+      //   e.pageX - canvas.offsetLeft - playersData[socket.id].radius / 2;
+      // playersData[socket.id].y =
+      //   e.pageY - canvas.offsetTop - playersData[socket.id].radius / 2;
     });
   });
 });

@@ -1,93 +1,124 @@
 "use strict";
 window.addEventListener("DOMContentLoaded", function () {
   console.log("Document loaded");
-  const socket = io("http://localhost:8080");
+  let socket = io.connect("http://localhost:8080");
+  console.log("socket", socket);
 
-  const canvas = document.getElementById("myCanvas");
+  const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  // Taille du canvas
-  canvas.width = 600;
-  canvas.height = 400;
+  canvas.width = document.documentElement.clientHeight * 0.8;
+  canvas.height = document.documentElement.clientHeight * 0.6;
 
-  const restart = document.getElementById("restart");
+  const restartButton = document.getElementById("restartButton");
+  const playButton = document.getElementById("playButton");
 
-  const button = document.getElementById("button");
   button.addEventListener("click", function () {
-    open("/misc/20201110_CV.pdf", "Mon_CV");
+    open("/public/20201110_CV.pdf", "Mon_CV");
   });
 
-  let playersData = [];
+  restartButton.addEventListener("click", function () {
+    window.location.reload();
+  });
 
-  const drawPlayers = function () {
-    playersData.forEach(function ({ x, y, color, radius }) {
+  playButton.addEventListener("click", () => {
+    socket.emit("startGame");
+  });
+
+  let players = [];
+  let currentPlayerID;
+
+  socket.on("connect", function () {
+    currentPlayerID = socket.id;
+    console.log("currentPlayerID", currentPlayerID);
+  });
+
+  socket.on("playersOn", function (playersFromServer) {
+    players = playersFromServer;
+    console.log("playersFromServer", playersFromServer);
+    console.log("players", players);
+  });
+
+  function drawPlayer() {
+    players.forEach(function ({ x, y, radius, color }) {
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
       ctx.closePath();
     });
-  };
-
-  socket.on("playersOn", function (listed) {
-    playersData = listed;
-  });
+  }
 
   function updatePosition() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    mouseMove();
-    drawPlayers();
+    drawPlayer();
+    // socket.emit("playersOn", Object.values(players));
     requestAnimationFrame(updatePosition);
   }
 
   requestAnimationFrame(updatePosition);
 
-  restart.addEventListener("click", function () {
-    window.location.reload();
+  socket.on("startGame", () => {
+    hidePlayButton();
   });
 
-  let mouseStatement = false;
-
-  // Mouse statement
-  function mouseMove(e) {
-    if (mouseStatement) {
-      // playersData.x = e.pageX - canvas.offsetLeft - playersData.radius / 2;
-      // playersData.y = e.pageY - canvas.offsetTop - playersData.radius / 2;
-      socket.emit("mouseMoved", { x: playersData.x, y: playersData.y });
-    }
-  }
-
-  // // Mouse statement
-  // function mouseMove(e) {
-  //   if (mouseStatement) {
-  //     player.position.x = e.pageX - canvas.offsetLeft - player.radius / 2;
-  //     player.position.y = e.pageY - canvas.offsetTop - player.radius / 2;
-  //     socket.emit('mouseMove', {x: player.position.x, y: player.position.y});
-  //   }
-  // }
-
-  function mouseClicked(e) {
-    if (
-      e.pageX < playersData.x + playersData.radius + canvas.offsetLeft &&
-      e.pageX > playersData.x - playersData.radius + canvas.offsetLeft &&
-      e.pageY < playersData.y + playersData.radius + canvas.offsetTop &&
-      e.pageY > playersData.y - playersData.radius + canvas.offsetTop
-    ) {
-      playersData.x =
-        e.pageX - canvas.offsetLeft - playersData.radius + radius / 2;
-      playersData.y =
-        e.pageY - canvas.offsetTop - playersData.radius + radius / 2;
-      mouseStatement = true;
-      canvas.onmousemove = mouseMove(e);
-      startTime = true;
-    }
-  }
-
-  function mouseReleased() {
-    mouseStatement = false;
-    canvas.onmousemove = null;
+  function hidePlayButton() {
+    playButton.style.display = "none";
   }
 
   canvas.onmousedown = mouseClicked;
   canvas.onmouseup = mouseReleased;
+
+  let mouseStatement = false;
+  let index;
+
+  function mouseClicked(e) {
+    console.log("Canvas clicked");
+    console.log(e);
+    for (let i = 0; i < players.length; i++) {
+      if (players[i].id == currentPlayerID) {
+        index = i;
+        console.log("i", i);
+        if (
+          e.pageX <
+            players[index].x + players[index].radius + canvas.offsetLeft &&
+          e.pageX >
+            players[index].x - players[index].radius + canvas.offsetLeft &&
+          e.pageY <
+            players[index].y + players[index].radius + canvas.offsetTop &&
+          e.pageY > players[index].y - players[index].radius + canvas.offsetTop
+        ) {
+          players[index].x =
+            e.pageX -
+            canvas.offsetLeft -
+            players[index].radius +
+            players[index].radius / 2;
+          players[index].y =
+            e.pageY -
+            canvas.offsetTop -
+            players[index].radius +
+            players[index].radius / 2;
+          mouseStatement = true;
+          canvas.onmousemove = mouseMove;
+          // startTime = true;
+          socket.emit("playerClicked", players);
+        }
+      }
+    }
+  }
+
+  // Mouse statement
+  function mouseMove(e) {
+    if (mouseStatement) {
+      players[index].x =
+        e.pageX - canvas.offsetLeft - players[index].radius * 0.5;
+      players[index].y =
+        e.pageY - canvas.offsetTop - players[index].radius * 0.5;
+      socket.emit("playerMoved", players);
+    }
+  }
+
+  function mouseReleased() {
+    canvas.onmousemove = null;
+  }
 });

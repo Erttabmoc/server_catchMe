@@ -2,11 +2,10 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>IFOCOP JEU CV</title>
+    <title>IFOCOP MULTIJOUEUR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="css/myStyle.css" />
-    <script src="http://localhost:8080/socket.io/socket.io.min.js"></script>
+    <link rel="stylesheet" href="/css/myStyle.css" />
   </head>
 
   <body>
@@ -17,7 +16,7 @@
     </p>
 
     <div class="catchMe">
-      <img src="img/catchMe.png" alt="Logo showing CatchMe" />
+      <img src="/img/catchMe.png" alt="Logo showing CatchMe" />
     </div>
 
     <p id="score">
@@ -26,13 +25,29 @@
     </p>
 
     <div class="game">
-      <canvas id="myCanvas"></canvas>
+      <canvas id="canvas"></canvas>
       <div>
-        <img id="restart" src="img/restart.jpg" alt="A restart button" />
+        <img id="restartButton" src="/img/restart.jpg" alt="A restart button" />
       </div>
     </div>
 
-    <p id="skills">Je suis totalement novice...</p>
+    <div id="players">
+      Waiting for player !
+      <div class="login">
+        <input
+          type="text"
+          class="form-input"
+          id="name"
+          placeholder="Your name"
+          required
+        />
+        <img id="playButton" src="/img/play.jpg" alt="A play button" />
+      </div>
+      <div id="players-box">
+        <h3>Players currently online :</h3>
+        <table id="players-table"></table>
+      </div>
+    </div>
 
     <div id="looser">
       <p>
@@ -41,11 +56,12 @@
       </p>
       <button id="button">Cliquez ici</button>
       <div>
-        <a href="misc/20201110_CV.pdf" download>Téléchargement</a>
+        <a href="/misc/20201110_CV.pdf" download>Téléchargement</a>
       </div>
     </div>
 
-    <script src="js/myScript.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/myScript.js"></script>
     <noscript>Veuillez activer JavaScript</noscript>
   </body>
 </html>

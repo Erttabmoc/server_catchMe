@@ -112,7 +112,7 @@ window.addEventListener("DOMContentLoaded", function () {
       ennemies[i] = new Ennemy();
     }
   }
-  // create ennemies ONLY w<hen player TWO joins
+  // create ennemies ONLY when player TWO joins
   createEnnemies();
 
   // Message bien,
