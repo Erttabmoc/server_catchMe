@@ -25,6 +25,13 @@ h1 {
   text-align: center;
 }
 
+h2 {
+  color: rgb(49, 51, 223);
+  font-size: 20px;
+  font-style: italic;
+  text-align: center;
+}
+
 #score {
   width: auto;
   background: #00458d;
@@ -97,7 +104,8 @@ canvas {
   text-align: center;
 }
 
-button {
+button,
+.joinButton {
   background: #00458d;
   border-radius: 5px;
   border: solid 5px #0085c6;
@@ -105,6 +113,16 @@ button {
   font-size: 20px;
   padding: 5px;
   margin-bottom: 5px;
+  font-family: "Times New Roman";
+}
+
+.inputForm {
+  border-radius: 5px;
+  border: solid 5px #0085c6;
+  color: rgb(49, 51, 223);
+  font-size: 20px;
+  padding: 5px;
+  margin-top: 5px;
   font-family: "Times New Roman";
 }
 

@@ -25,39 +25,6 @@ window.addEventListener("DOMContentLoaded", function () {
     socket.emit("startGame");
   });
 
-  let players = [];
-  let currentPlayerID;
-
-  socket.on("connect", function () {
-    currentPlayerID = socket.id;
-    console.log("currentPlayerID", currentPlayerID);
-  });
-
-  socket.on("playersOn", function (playersFromServer) {
-    players = playersFromServer;
-    console.log("playersFromServer", playersFromServer);
-    console.log("players", players);
-  });
-
-  function drawPlayer() {
-    players.forEach(function ({ x, y, radius, color }) {
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.closePath();
-    });
-  }
-
-  function updatePosition() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPlayer();
-    // socket.emit("playersOn", Object.values(players));
-    requestAnimationFrame(updatePosition);
-  }
-
-  requestAnimationFrame(updatePosition);
-
   socket.on("startGame", () => {
     hidePlayButton();
   });
@@ -66,59 +33,107 @@ window.addEventListener("DOMContentLoaded", function () {
     playButton.style.display = "none";
   }
 
-  canvas.onmousedown = mouseClicked;
-  canvas.onmouseup = mouseReleased;
+  let players = [];
+  let currentPlayerID;
 
-  let mouseStatement = false;
-  let index;
+  socket.on("connect", function () {
+    currentPlayerID = socket.id;
+    console.log("currentPlayerID", currentPlayerID);
 
-  function mouseClicked(e) {
-    console.log("Canvas clicked");
-    console.log(e);
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].id == currentPlayerID) {
-        index = i;
-        console.log("i", i);
-        if (
-          e.pageX <
-            players[index].x + players[index].radius + canvas.offsetLeft &&
-          e.pageX >
-            players[index].x - players[index].radius + canvas.offsetLeft &&
-          e.pageY <
-            players[index].y + players[index].radius + canvas.offsetTop &&
-          e.pageY > players[index].y - players[index].radius + canvas.offsetTop
-        ) {
-          players[index].x =
-            e.pageX -
-            canvas.offsetLeft -
-            players[index].radius +
-            players[index].radius / 2;
-          players[index].y =
-            e.pageY -
-            canvas.offsetTop -
-            players[index].radius +
-            players[index].radius / 2;
-          mouseStatement = true;
-          canvas.onmousemove = mouseMove;
-          // startTime = true;
-          socket.emit("playerClicked", players);
+    socket.on("playersOn", function (playersFromServer) {
+      players = playersFromServer;
+      console.log("playersFromServer", playersFromServer);
+      console.log("players", players);
+      console.log("Client received playersList !");
+    });
+
+    update();
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      players;
+      // mouseClicked();
+      // mouseMove();
+      drawPlayer();
+      requestAnimationFrame(update);
+    }
+
+    function drawPlayer() {
+      players.forEach(function ({ x, y, radius, color }) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    canvas.onmousedown = mouseClicked;
+    canvas.onmouseup = mouseReleased;
+
+    let mouseStatement = false;
+    let index;
+
+    function mouseClicked(e) {
+      console.log("Canvas clicked");
+      console.log(e);
+      for (let i = 0; i < players.length; i++) {
+        if (players[i].id == currentPlayerID) {
+          index = i;
+          console.log("i", i);
+          if (
+            e.pageX <
+              players[index].x + players[index].radius + canvas.offsetLeft &&
+            e.pageX >
+              players[index].x - players[index].radius + canvas.offsetLeft &&
+            e.pageY <
+              players[index].y + players[index].radius + canvas.offsetTop &&
+            e.pageY >
+              players[index].y - players[index].radius + canvas.offsetTop
+          ) {
+            players[index].x =
+              e.pageX -
+              canvas.offsetLeft -
+              players[index].radius +
+              players[index].radius * 0.5;
+            players[index].y =
+              e.pageY -
+              canvas.offsetTop -
+              players[index].radius +
+              players[index].radius * 0.5;
+            mouseStatement = true;
+            canvas.onmousemove = mouseMove;
+            // startTime = true;
+            socket.emit("playerClicked", players);
+            console.log("Client sent playerClicked");
+          }
         }
       }
     }
-  }
 
-  // Mouse statement
-  function mouseMove(e) {
-    if (mouseStatement) {
-      players[index].x =
-        e.pageX - canvas.offsetLeft - players[index].radius * 0.5;
-      players[index].y =
-        e.pageY - canvas.offsetTop - players[index].radius * 0.5;
-      socket.emit("playerMoved", players);
+    socket.on("playersUpdate", (playersFromServer) => {
+      players = playersFromServer;
+      console.log("Received playersUpdate");
+    });
+
+    // Mouse statement
+    function mouseMove(e) {
+      if (mouseStatement) {
+        players[index].x =
+          e.pageX - canvas.offsetLeft - players[index].radius * 0.5;
+        players[index].y =
+          e.pageY - canvas.offsetTop - players[index].radius * 0.5;
+        socket.emit("mouseMoved", players);
+      }
     }
-  }
 
-  function mouseReleased() {
-    canvas.onmousemove = null;
-  }
+    socket.on("playersMoved", (playersFromServer) => {
+      players = playersFromServer;
+      console.log("Received playersMoved");
+    });
+
+    function mouseReleased() {
+      canvas.onmousemove = null;
+    }
+  });
 });

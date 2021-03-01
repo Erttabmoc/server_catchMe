@@ -5,6 +5,10 @@ const http = require("http");
 const socketio = require("socket.io");
 const process = require("process");
 
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const playerSchema = require("./objModel");
+
 const publicPath = path.join(__dirname, "/../public");
 const PORT = process.env.PORT || 8080;
 
@@ -13,6 +17,29 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 app.use(express.static(publicPath));
+
+mongoose
+  .connect(
+    "mongodb+srv://server_catchMe:At0i22e45mdb@cluster0.mlab6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  )
+  .then(() => console.log("Connexion à MongoDB réussie !"))
+  .catch(() => console.log("Connexion à MongoDB échouée !"));
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  next();
+});
+
+app.use(bodyParser.json());
 
 server.listen(PORT, function () {
   console.log(`Serveur connecté sur le port ${PORT}`);
@@ -43,24 +70,27 @@ io.on("connection", (socket) => {
     delete players[socket.id];
   });
 
-  updatePosition();
-  // setInterval(updatePosition, 1000 / 60);
+  update();
+  // setInterval(update, 1000 / 60);
 
-  function updatePosition() {
+  function update() {
     let playersList = Object.values(players);
     io.emit("playersOn", playersList);
-    console.log("players {}", players);
-    console.log("playersList", playersList);
+    // console.log("players {}", players);
+    // console.log("playersList", playersList);
+    console.log("Server sent playersList !");
   }
 
-  socket.on("playerCliked", (playersFromClient) => {
-    console.log("playerFromClient", playersFromClient);
+  socket.on("playerClicked", (playersFromClient) => {
     io.emit("playersUpdate", playersFromClient);
+    console.log("Server received playerClicked");
+    console.log("Server sent playersUpdate");
   });
 
   socket.on("mouseMoved", (playersFromClient) => {
-    console.log("playerFromClient", playersFromClient);
     io.emit("playersMoved", playersFromClient);
+    console.log("Server received mouseMoved");
+    console.log("Server sent playersMoved");
   });
 
   socket.on("startGame", () => {
