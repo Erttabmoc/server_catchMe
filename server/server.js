@@ -46,6 +46,7 @@ server.listen(PORT, function () {
 });
 
 let players = {};
+let ennemies = [];
 
 io.on("connection", (socket) => {
   console.log("socket.connected", socket.connected);
@@ -96,4 +97,24 @@ io.on("connection", (socket) => {
   socket.on("startGame", () => {
     io.emit("startGame");
   });
+
+  class Ennemy {
+    constructor() {
+      this.x = 20;
+      this.y = 20;
+      this.color = "red";
+      this.radius = 5 + Math.ceil(Math.random() * 15);
+      this.speedX = 1 + Math.floor(Math.random() * 4);
+      this.speedY = -1 - Math.floor(Math.random() * 4);
+    }
+  }
+
+  createEnnemies();
+  function createEnnemies() {
+    for (let i = 0; i < 5; i++) {
+      ennemies[i] = new Ennemy();
+    }
+    io.emit("Ennemy", ennemies);
+    console.log("Server sent Ennemy");
+  }
 });

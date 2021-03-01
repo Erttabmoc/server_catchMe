@@ -135,5 +135,39 @@ window.addEventListener("DOMContentLoaded", function () {
     function mouseReleased() {
       canvas.onmousemove = null;
     }
+
+    socket.on("Ennemy", (ennemies) => {
+      console.log("Server received Ennemy");
+      console.log(ennemies);
+    });
+
+    function drawEnnemy() {
+      ennemies.forEach(function ({ x, y, radius, color }) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    function moveEnnemy() {
+      if (
+        this.x + this.speed.x > canvas.width - this.radius ||
+        this.x + this.speed.x < this.radius
+      ) {
+        // ballsHitSound.play();
+        this.speed.x = -this.speed.x;
+      }
+      if (
+        this.y + this.speed.y > canvas.height - this.radius ||
+        this.y + this.speed.y < this.radius
+      ) {
+        // ballsHitSound.play();
+        this.speed.y = -this.speed.y;
+      }
+      this.x += this.speed.x;
+      this.y += this.speed.y;
+    }
   });
 });

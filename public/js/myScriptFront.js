@@ -63,7 +63,7 @@ window.addEventListener("DOMContentLoaded", function () {
     showSkills();
   }
 
-  var ennemy = function () {
+  var Ennemy = function () {
     this.position = {
       x: 20,
       y: 20,
@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  ennemy.prototype.drawEnnemy = function () {
+  Ennemy.prototype.drawEnnemy = function () {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = "red";
@@ -84,7 +84,7 @@ window.addEventListener("DOMContentLoaded", function () {
     ctx.closePath();
   };
 
-  ennemy.prototype.moveEnnemy = function () {
+  Ennemy.prototype.moveEnnemy = function () {
     if (
       this.position.x + this.speed.x > canvas.width - this.radius ||
       this.position.x + this.speed.x < this.radius
