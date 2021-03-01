@@ -7,8 +7,8 @@ window.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  canvas.width = document.documentElement.clientHeight * 0.8;
-  canvas.height = document.documentElement.clientHeight * 0.6;
+  canvas.width = 600;
+  canvas.height = 400;
 
   const restartButton = document.getElementById("restartButton");
   const playButton = document.getElementById("playButton");
@@ -47,17 +47,6 @@ window.addEventListener("DOMContentLoaded", function () {
       console.log("Client received playersList !");
     });
 
-    update();
-
-    function update() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      players;
-      // mouseClicked();
-      // mouseMove();
-      drawPlayer();
-      requestAnimationFrame(update);
-    }
-
     function drawPlayer() {
       players.forEach(function ({ x, y, radius, color }) {
         ctx.beginPath();
@@ -73,6 +62,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
     let mouseStatement = false;
     let index;
+    let startTime = false;
 
     function mouseClicked(e) {
       console.log("Canvas clicked");
@@ -103,7 +93,7 @@ window.addEventListener("DOMContentLoaded", function () {
               players[index].radius * 0.5;
             mouseStatement = true;
             canvas.onmousemove = mouseMove;
-            // startTime = true;
+            startTime = true;
             socket.emit("playerClicked", players);
             console.log("Client sent playerClicked");
           }
@@ -137,37 +127,71 @@ window.addEventListener("DOMContentLoaded", function () {
     }
 
     socket.on("Ennemy", (ennemies) => {
-      console.log("Server received Ennemy");
-      console.log(ennemies);
+      console.log("Client received Ennemy");
+      console.log("ennemies", ennemies);
     });
 
-    function drawEnnemy() {
-      ennemies.forEach(function ({ x, y, radius, color }) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.closePath();
-      });
+    function drawEnnemy(ennemy) {
+      ctx.beginPath();
+      ctx.arc(ennemy.x, ennemy.y, ennemy.radius, 0, Math.PI * 2);
+      ctx.fillStyle = ennemy.color;
+      ctx.fill();
+      ctx.closePath();
     }
 
-    function moveEnnemy() {
-      if (
-        this.x + this.speed.x > canvas.width - this.radius ||
-        this.x + this.speed.x < this.radius
-      ) {
-        // ballsHitSound.play();
-        this.speed.x = -this.speed.x;
-      }
-      if (
-        this.y + this.speed.y > canvas.height - this.radius ||
-        this.y + this.speed.y < this.radius
-      ) {
-        // ballsHitSound.play();
-        this.speed.y = -this.speed.y;
-      }
-      this.x += this.speed.x;
-      this.y += this.speed.y;
+    socket.on("ennemiesUpdate", (ennemiesPos) => {
+      animate(ennemiesPos);
+      console.log("ennemiesPos[0].x", ennemiesPos[0].x);
+    });
+
+    update();
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      // drawEnnemy();
+      // moveEnnemy();
+      requestAnimationFrame(update);
     }
+
+    let time;
+
+    function animate(ennemiesPos) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      if (startTime) {
+        drawEnnemy(ennemiesPos[0]);
+      }
+      if (time > 200) {
+        drawEnnemy(ennemiesPos[1]);
+        if (unlockedSkills === 0) unlockedSkills++;
+      }
+      if (time > 400) {
+        drawEnnemy(ennemiesPos[2]);
+        if (unlockedSkills === 1) unlockedSkills++;
+      }
+      if (time > 600) {
+        drawEnnemy(ennemiesPos[3]);
+        if (unlockedSkills === 2) unlockedSkills++;
+      }
+      if (time > 800) {
+        drawEnnemy(ennemiesPos[4]);
+        // hitScoreSound.play();
+        if (unlockedSkills === 3) unlockedSkills++;
+      }
+      // detection();
+      // lostDetection();
+    }
+
+    function chrono() {
+      if (startTime) {
+        this.time += 1;
+        // score.innerHTML = `Vous avez tenu ${time / 100}s`;
+      }
+      // animate(ennemiesPos);
+      // showSkills();
+    }
+
+    let action = setInterval(chrono, 1000 / 60);
   });
 });

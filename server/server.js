@@ -53,8 +53,8 @@ io.on("connection", (socket) => {
 
   players[socket.id] = {
     id: socket.id,
-    x: 680,
-    y: 280,
+    x: 580,
+    y: 380,
     radius: 15,
     color:
       "rgb(" +
@@ -110,11 +110,40 @@ io.on("connection", (socket) => {
   }
 
   createEnnemies();
+
   function createEnnemies() {
     for (let i = 0; i < 5; i++) {
       ennemies[i] = new Ennemy();
     }
     io.emit("Ennemy", ennemies);
     console.log("Server sent Ennemy");
+  }
+
+  function checkPos() {
+    ennemies.forEach((element) => {
+      moveEnnemy(element);
+    });
+    io.emit("ennemiesUpdate", ennemies);
+  }
+
+  setInterval(checkPos, 1000 / 60);
+
+  function moveEnnemy(ennemy) {
+    if (
+      ennemy.x + ennemy.speedX > 600 - ennemy.radius ||
+      ennemy.x + ennemy.speedX < ennemy.radius
+    ) {
+      // ballsHitSound.play();
+      ennemy.speedX = -ennemy.speedX;
+    }
+    if (
+      ennemy.y + ennemy.speedY > 400 - ennemy.radius ||
+      ennemy.y + ennemy.speedY < ennemy.radius
+    ) {
+      // ballsHitSound.play();
+      ennemy.speedY = -ennemy.speedY;
+    }
+    ennemy.x += ennemy.speedX;
+    ennemy.y += ennemy.speedY;
   }
 });
