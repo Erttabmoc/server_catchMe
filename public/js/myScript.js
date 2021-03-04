@@ -2,7 +2,6 @@
 window.addEventListener("DOMContentLoaded", function () {
   console.log("Document loaded");
   let socket = io.connect("http://localhost:8080");
-  console.log("socket", socket);
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
@@ -21,30 +20,49 @@ window.addEventListener("DOMContentLoaded", function () {
     window.location.reload();
   });
 
-  playButton.addEventListener("click", () => {
-    socket.emit("startGame");
-  });
-
-  socket.on("startGame", () => {
-    hidePlayButton();
-  });
-
   function hidePlayButton() {
     playButton.style.display = "none";
   }
 
   let players = [];
   let currentPlayerID;
+  let currentPlayerIndex;
+  let ennemies = [];
 
   socket.on("connect", function () {
     currentPlayerID = socket.id;
-    console.log("currentPlayerID", currentPlayerID);
 
     socket.on("playersOn", function (playersFromServer) {
       players = playersFromServer;
-      console.log("playersFromServer", playersFromServer);
       console.log("players", players);
-      console.log("Client received playersList !");
+      console.log("Client received players");
+    });
+
+    playButton.addEventListener("click", () => {
+      for (let i = 0; i < players.length; i++) {
+        if (players[i].id == currentPlayerID) {
+          currentPlayerIndex = i;
+          players[currentPlayerIndex].ready = "true";
+          socket.emit("startGame", players);
+          console.log(`Player ${currentPlayerID} is ready to play`);
+          console.log("players", players);
+        }
+      }
+    });
+
+    socket.on("startGame", (readyPlayers) => {
+      players = readyPlayers;
+    });
+
+    socket.on("startGame", (searchPayersAllReady) => {
+      console.log("searchPayersAllReady", searchPayersAllReady);
+      let anyPlayer = searchPayersAllReady.some(
+        (player) => player.ready == "false"
+      );
+      console.log("anyPlayer", anyPlayer);
+      if (anyPlayer == false) {
+        hidePlayButton();
+      }
     });
 
     function drawPlayer() {
@@ -61,38 +79,44 @@ window.addEventListener("DOMContentLoaded", function () {
     canvas.onmouseup = mouseReleased;
 
     let mouseStatement = false;
-    let index;
+    let currentPlayerIndex;
     let startTime = false;
 
     function mouseClicked(e) {
-      console.log("Canvas clicked");
-      console.log(e);
       for (let i = 0; i < players.length; i++) {
         if (players[i].id == currentPlayerID) {
-          index = i;
-          console.log("i", i);
+          currentPlayerIndex = i;
           if (
+            players[currentPlayerIndex].ready == "true" &&
             e.pageX <
-              players[index].x + players[index].radius + canvas.offsetLeft &&
+              players[currentPlayerIndex].x +
+                players[currentPlayerIndex].radius +
+                canvas.offsetLeft &&
             e.pageX >
-              players[index].x - players[index].radius + canvas.offsetLeft &&
+              players[currentPlayerIndex].x -
+                players[currentPlayerIndex].radius +
+                canvas.offsetLeft &&
             e.pageY <
-              players[index].y + players[index].radius + canvas.offsetTop &&
+              players[currentPlayerIndex].y +
+                players[currentPlayerIndex].radius +
+                canvas.offsetTop &&
             e.pageY >
-              players[index].y - players[index].radius + canvas.offsetTop
+              players[currentPlayerIndex].y -
+                players[currentPlayerIndex].radius +
+                canvas.offsetTop
           ) {
-            players[index].x =
+            players[currentPlayerIndex].x =
               e.pageX -
               canvas.offsetLeft -
-              players[index].radius +
-              players[index].radius * 0.5;
-            players[index].y =
+              players[currentPlayerIndex].radius +
+              players[currentPlayerIndex].radius * 0.5;
+            players[currentPlayerIndex].y =
               e.pageY -
               canvas.offsetTop -
-              players[index].radius +
-              players[index].radius * 0.5;
+              players[currentPlayerIndex].radius +
+              players[currentPlayerIndex].radius * 0.5;
             mouseStatement = true;
-            canvas.onmousemove = mouseMove;
+            canvas.onmousemove = playerMove;
             startTime = true;
             socket.emit("playerClicked", players);
             console.log("Client sent playerClicked");
@@ -107,91 +131,71 @@ window.addEventListener("DOMContentLoaded", function () {
     });
 
     // Mouse statement
-    function mouseMove(e) {
+    function playerMove(e) {
       if (mouseStatement) {
-        players[index].x =
-          e.pageX - canvas.offsetLeft - players[index].radius * 0.5;
-        players[index].y =
-          e.pageY - canvas.offsetTop - players[index].radius * 0.5;
+        players[currentPlayerIndex].x =
+          e.pageX -
+          canvas.offsetLeft -
+          players[currentPlayerIndex].radius * 0.5;
+        players[currentPlayerIndex].y =
+          e.pageY - canvas.offsetTop - players[currentPlayerIndex].radius * 0.5;
         socket.emit("mouseMoved", players);
       }
     }
 
     socket.on("playersMoved", (playersFromServer) => {
       players = playersFromServer;
-      console.log("Received playersMoved");
+      console.log("Received playersMoved", players);
     });
 
     function mouseReleased() {
       canvas.onmousemove = null;
     }
 
-    socket.on("Ennemy", (ennemies) => {
-      console.log("Client received Ennemy");
-      console.log("ennemies", ennemies);
+    socket.on("ennemiesCreated", (groupOfennemies) => {
+      ennemies = groupOfennemies;
+      console.log("Client received ennemies", ennemies);
     });
 
-    function drawEnnemy(ennemy) {
-      ctx.beginPath();
-      ctx.arc(ennemy.x, ennemy.y, ennemy.radius, 0, Math.PI * 2);
-      ctx.fillStyle = ennemy.color;
-      ctx.fill();
-      ctx.closePath();
+    function drawEnnemy() {
+      ennemies.forEach((ennemy) => {
+        ctx.beginPath();
+        ctx.arc(ennemy.x, ennemy.y, ennemy.radius, 0, Math.PI * 2);
+        ctx.fillStyle = ennemy.color;
+        ctx.fill();
+        ctx.closePath();
+      });
     }
+
+    let ennemiesPos;
 
     socket.on("ennemiesUpdate", (ennemiesPos) => {
       animate(ennemiesPos);
-      console.log("ennemiesPos[0].x", ennemiesPos[0].x);
+      console.log("ennemiesPos", ennemiesPos);
+      // console.log("ennemiesPos[0].x", ennemiesPos[0].x);
     });
-
-    update();
-
-    function update() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPlayer();
-      // drawEnnemy();
-      // moveEnnemy();
-      requestAnimationFrame(update);
-    }
 
     let time;
 
-    function animate(ennemiesPos) {
+    function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPlayer();
       if (startTime) {
-        drawEnnemy(ennemiesPos[0]);
-      }
-      if (time > 200) {
-        drawEnnemy(ennemiesPos[1]);
-        if (unlockedSkills === 0) unlockedSkills++;
-      }
-      if (time > 400) {
-        drawEnnemy(ennemiesPos[2]);
-        if (unlockedSkills === 1) unlockedSkills++;
-      }
-      if (time > 600) {
-        drawEnnemy(ennemiesPos[3]);
-        if (unlockedSkills === 2) unlockedSkills++;
-      }
-      if (time > 800) {
-        drawEnnemy(ennemiesPos[4]);
-        // hitScoreSound.play();
-        if (unlockedSkills === 3) unlockedSkills++;
+        drawEnnemy();
       }
       // detection();
       // lostDetection();
     }
 
     function chrono() {
-      if (startTime) {
-        this.time += 1;
-        // score.innerHTML = `Vous avez tenu ${time / 100}s`;
+      if (players.length >= 2) {
+        if (startTime) {
+          this.time += 1;
+          console.log(time);
+        }
       }
-      // animate(ennemiesPos);
-      // showSkills();
     }
 
-    let action = setInterval(chrono, 1000 / 60);
+    let action = setInterval(animate, 1000 / 30);
   });
 });

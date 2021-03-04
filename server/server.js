@@ -5,10 +5,6 @@ const http = require("http");
 const socketio = require("socket.io");
 const process = require("process");
 
-const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
-const playerSchema = require("./objModel");
-
 const publicPath = path.join(__dirname, "/../public");
 const PORT = process.env.PORT || 8080;
 
@@ -18,34 +14,11 @@ const io = socketio(server);
 
 app.use(express.static(publicPath));
 
-mongoose
-  .connect(
-    "mongodb+srv://server_catchMe:At0i22e45mdb@cluster0.mlab6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
-  .then(() => console.log("Connexion à MongoDB réussie !"))
-  .catch(() => console.log("Connexion à MongoDB échouée !"));
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-  );
-  next();
-});
-
-app.use(bodyParser.json());
-
 server.listen(PORT, function () {
   console.log(`Serveur connecté sur le port ${PORT}`);
 });
 
-let players = {};
+let players = [];
 let ennemies = [];
 
 io.on("connection", (socket) => {
@@ -56,14 +29,8 @@ io.on("connection", (socket) => {
     x: 580,
     y: 380,
     radius: 15,
-    color:
-      "rgb(" +
-      Math.floor(Math.random() * 255) +
-      "," +
-      Math.floor(Math.random() * 255) +
-      "," +
-      Math.floor(Math.random() * 255) +
-      ")",
+    color: "#" + (((1 << 24) * Math.random()) | 0).toString(16),
+    ready: "false",
   };
 
   socket.on("disconnect", function () {
@@ -75,17 +42,31 @@ io.on("connection", (socket) => {
   // setInterval(update, 1000 / 60);
 
   function update() {
-    let playersList = Object.values(players);
-    io.emit("playersOn", playersList);
-    // console.log("players {}", players);
-    // console.log("playersList", playersList);
-    console.log("Server sent playersList !");
+    let checkPlayers = Object.values(players);
+    io.emit("playersOn", checkPlayers);
+    console.log("Server sent players", checkPlayers);
   }
+
+  socket.on("startGame", (readyPlayers) => {
+    players = readyPlayers;
+    io.emit("startGame", players);
+    console.log(`Player ${socket.id} is ready to play`);
+
+    let anyPlayer = players.some((player) => player.ready == "false");
+    console.log("anyPlayer", anyPlayer);
+    if (anyPlayer == false) {
+      // createEnnemies();
+    }
+  });
+
+  let startEnnemiesMove = false;
 
   socket.on("playerClicked", (playersFromClient) => {
     io.emit("playersUpdate", playersFromClient);
+    startEnnemiesMove = true;
     console.log("Server received playerClicked");
     console.log("Server sent playersUpdate");
+    setInterval(moveEnnemies, 1000 / 60);
   });
 
   socket.on("mouseMoved", (playersFromClient) => {
@@ -94,56 +75,46 @@ io.on("connection", (socket) => {
     console.log("Server sent playersMoved");
   });
 
-  socket.on("startGame", () => {
-    io.emit("startGame");
-  });
-
-  class Ennemy {
-    constructor() {
-      this.x = 20;
-      this.y = 20;
-      this.color = "red";
-      this.radius = 5 + Math.ceil(Math.random() * 15);
-      this.speedX = 1 + Math.floor(Math.random() * 4);
-      this.speedY = -1 - Math.floor(Math.random() * 4);
-    }
-  }
-
-  createEnnemies();
+  let Ennemy = function () {
+    this.x = 30;
+    this.y = 30;
+    this.color = "#" + (((1 << 24) * Math.random()) | 0).toString(16);
+    this.radius = 5 + Math.ceil(Math.random() * 15);
+    this.speedX = 1 + Math.floor(Math.random() * 4);
+    this.speedY = -1 - Math.floor(Math.random() * 4);
+  };
 
   function createEnnemies() {
-    for (let i = 0; i < 5; i++) {
-      ennemies[i] = new Ennemy();
+    for (let i = 0; i < 3; i++) {
+      let ennemy = new Ennemy();
+      ennemies.push(ennemy);
     }
-    io.emit("Ennemy", ennemies);
+    io.emit("ennemiesCreated", ennemies);
     console.log("Server sent Ennemy");
   }
 
-  function checkPos() {
-    ennemies.forEach((element) => {
-      moveEnnemy(element);
+  function moveEnnemies() {
+    ennemies.forEach((ennemy) => {
+      if (startEnnemiesMove == true) {
+        if (
+          ennemy.x + ennemy.speedX > 600 - ennemy.radius ||
+          ennemy.x + ennemy.speedX < ennemy.radius
+        ) {
+          // ballsHitSound.play();
+          ennemy.speedX = -ennemy.speedX;
+        }
+        if (
+          ennemy.y + ennemy.speedY > 400 - ennemy.radius ||
+          ennemy.y + ennemy.speedY < ennemy.radius
+        ) {
+          // ballsHitSound.play();
+          ennemy.speedY = -ennemy.speedY;
+        }
+        ennemy.x += ennemy.speedX;
+        ennemy.y += ennemy.speedY;
+        io.emit("ennemiesUpdate", ennemies);
+        console.log("Server sent ennemiesUpdate");
+      }
     });
-    io.emit("ennemiesUpdate", ennemies);
-  }
-
-  setInterval(checkPos, 1000 / 60);
-
-  function moveEnnemy(ennemy) {
-    if (
-      ennemy.x + ennemy.speedX > 600 - ennemy.radius ||
-      ennemy.x + ennemy.speedX < ennemy.radius
-    ) {
-      // ballsHitSound.play();
-      ennemy.speedX = -ennemy.speedX;
-    }
-    if (
-      ennemy.y + ennemy.speedY > 400 - ennemy.radius ||
-      ennemy.y + ennemy.speedY < ennemy.radius
-    ) {
-      // ballsHitSound.play();
-      ennemy.speedY = -ennemy.speedY;
-    }
-    ennemy.x += ennemy.speedX;
-    ennemy.y += ennemy.speedY;
   }
 });
