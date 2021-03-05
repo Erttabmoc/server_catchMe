@@ -4,6 +4,7 @@ const express = require("express");
 const http = require("http");
 const socketio = require("socket.io");
 const process = require("process");
+const { emit } = require("process");
 
 const publicPath = path.join(__dirname, "/../public");
 const PORT = process.env.PORT || 8080;
@@ -39,12 +40,11 @@ io.on("connection", (socket) => {
   });
 
   update();
-  // setInterval(update, 1000 / 60);
 
   function update() {
     let checkPlayers = Object.values(players);
     io.emit("playersOn", checkPlayers);
-    console.log("Server sent players", checkPlayers);
+    // console.log("Server sent players", checkPlayers);
   }
 
   function createEnnemies() {
@@ -53,12 +53,12 @@ io.on("connection", (socket) => {
       ennemies.push(ennemy);
     }
     io.emit("ennemiesCreated", ennemies);
-    console.log("Server sent Ennemy");
+    // console.log("Server sent Ennemy");
   }
 
-  socket.on("startGame", (readyPlayers) => {
+  socket.on("playerReady", (readyPlayers) => {
     players = readyPlayers;
-    io.emit("startGame", players);
+    io.emit("playerReady", players);
     console.log(`Player ${socket.id} is ready to play`);
     let anyPlayer = players.some((player) => player.ready == "false");
     console.log("anyPlayer", anyPlayer);
@@ -69,18 +69,24 @@ io.on("connection", (socket) => {
 
   let startEnnemiesMove = false;
 
+  socket.on("startChrono", (gooo) => {
+    socket.emit("startChrono");
+    startEnnemiesMove = true;
+    setInterval(moveEnnemies, 1000 / 60);
+  });
+
   socket.on("playerClicked", (playersFromClient) => {
     io.emit("playersUpdate", playersFromClient);
-    startEnnemiesMove = true;
-    console.log("Server received playerClicked");
-    console.log("Server sent playersUpdate");
-    setInterval(moveEnnemies, 1000 / 60);
+    // startEnnemiesMove = true;
+    // console.log("Server received playerClicked");
+    // console.log("Server sent playersUpdate");
+    // setInterval(moveEnnemies, 1000 / 60);
   });
 
   socket.on("mouseMoved", (playersFromClient) => {
     io.emit("playersMoved", playersFromClient);
-    console.log("Server received mouseMoved");
-    console.log("Server sent playersMoved");
+    // console.log("Server received mouseMoved");
+    // console.log("Server sent playersMoved");
   });
 
   let Ennemy = function () {
@@ -112,7 +118,7 @@ io.on("connection", (socket) => {
         ennemy.x += ennemy.speedX;
         ennemy.y += ennemy.speedY;
         io.emit("ennemiesUpdate", ennemies);
-        console.log("Server sent ennemiesUpdate");
+        // console.log("Server sent ennemiesUpdate");
       }
     });
   }

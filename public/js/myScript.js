@@ -43,26 +43,37 @@ window.addEventListener("DOMContentLoaded", function () {
         if (players[i].id == currentPlayerID) {
           currentPlayerIndex = i;
           players[currentPlayerIndex].ready = "true";
-          socket.emit("startGame", players);
+          socket.emit("playerReady", players);
           console.log(`Player ${currentPlayerID} is ready to play`);
-          console.log("players", players);
         }
       }
     });
 
-    socket.on("startGame", (readyPlayers) => {
-      players = readyPlayers;
-    });
+    // socket.on("playerReady", (readyPlayers) => {
+    //   players = readyPlayers;
+    // });
 
-    socket.on("startGame", (searchPayersAllReady) => {
-      console.log("searchPayersAllReady", searchPayersAllReady);
+    let action;
+
+    socket.on("playerReady", (searchPayersAllReady) => {
+      // console.log("searchPayersAllReady", searchPayersAllReady);
+      players = searchPayersAllReady;
       let anyPlayer = searchPayersAllReady.some(
         (player) => player.ready == "false"
       );
-      console.log("anyPlayer", anyPlayer);
+      // console.log("anyPlayer", anyPlayer);
       if (anyPlayer == false) {
         hidePlayButton();
+        socket.emit("startChrono");
+        console.log("Les lions sont relachés !");
+        console.log("Les lions sont relachés !");
+
+        action = setInterval(chrono, 1000 / 60);
       }
+    });
+
+    socket.on("startChrono", () => {
+      startTime = true;
     });
 
     function drawPlayer() {
@@ -118,7 +129,7 @@ window.addEventListener("DOMContentLoaded", function () {
               players[currentPlayerIndex].radius * 0.5;
             mouseStatement = true;
             canvas.onmousemove = playerMove;
-            startTime = true;
+            // startTime = true;
             socket.emit("playerClicked", players);
             console.log("Client sent playerClicked");
           }
@@ -128,7 +139,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
     socket.on("playersUpdate", (playersFromServer) => {
       players = playersFromServer;
-      console.log("Received playersUpdate");
+      console.log("Client received playersUpdate");
     });
 
     // Mouse statement
@@ -141,13 +152,13 @@ window.addEventListener("DOMContentLoaded", function () {
         players[currentPlayerIndex].y =
           e.pageY - canvas.offsetTop - players[currentPlayerIndex].radius * 0.5;
         socket.emit("mouseMoved", players);
-        console.log("Player moved");
+        // console.log("Player moved");
       }
     }
 
     socket.on("playersMoved", (playersFromServer) => {
       players = playersFromServer;
-      console.log("Received playersMoved", players);
+      // console.log("Received playersMoved", players);
     });
 
     function mouseReleased() {
@@ -173,8 +184,48 @@ window.addEventListener("DOMContentLoaded", function () {
 
     socket.on("ennemiesUpdate", (ennemiesPos) => {
       ennemies = ennemiesPos;
-      console.log("ennemiesPos", ennemiesPos);
+      // console.log("ennemiesPos", ennemiesPos);
     });
+
+    let lost = false;
+
+    // Détection des collisions
+    function detection() {
+      for (let i = 0; i < ennemies.length; i++) {
+        let distance = Math.sqrt(
+          Math.pow(players[currentPlayerIndex].x - ennemies[i].x, 2) +
+            Math.pow(players[currentPlayerIndex].y - ennemies[i].y, 2)
+        );
+        if (
+          distance <=
+          players[currentPlayerIndex].radius + ennemies[i].radius
+        ) {
+          // console.log("Launch detection !");
+          // crashSound.play();
+          lost = true;
+          startTime = false;
+          console.log(`Player ${players[currentPlayerIndex].id} lost !`);
+        }
+      }
+    }
+
+    // Message
+    function drawMessage(msg) {
+      ctx.beginPath();
+      ctx.font = "20px Comic Sans MS";
+      ctx.fillStyle = "black";
+      ctx.textAlign = "center";
+      ctx.fillText(msg, canvas.width / 2, canvas.height / 2);
+      ctx.closePath();
+    }
+
+    // Game over
+    function lostDetection() {
+      if (lost) {
+        drawMessage(`Ahah! Player ${players[currentPlayerIndex].id} lost!`);
+        clearInterval(action);
+      }
+    }
 
     let time = 0;
 
@@ -182,8 +233,8 @@ window.addEventListener("DOMContentLoaded", function () {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPlayer();
       drawEnnemy();
-      // detection();
-      // lostDetection();
+      detection();
+      lostDetection();
     }
 
     function chrono() {
@@ -192,10 +243,8 @@ window.addEventListener("DOMContentLoaded", function () {
         score.innerHTML = `Vous avez tenu ${time / 100}s`;
       }
       animate();
-      requestAnimationFrame(chrono);
     }
 
-    chrono();
     // let action = setInterval(chrono, 1000 / 60);
   });
 });
