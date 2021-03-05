@@ -9,6 +9,7 @@ window.addEventListener("DOMContentLoaded", function () {
   canvas.width = 600;
   canvas.height = 400;
 
+  const score = document.getElementById("score");
   const restartButton = document.getElementById("restartButton");
   const playButton = document.getElementById("playButton");
 
@@ -34,8 +35,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
     socket.on("playersOn", function (playersFromServer) {
       players = playersFromServer;
-      console.log("players", players);
-      console.log("Client received players");
+      console.log("Client received players", players);
     });
 
     playButton.addEventListener("click", () => {
@@ -105,6 +105,7 @@ window.addEventListener("DOMContentLoaded", function () {
                 players[currentPlayerIndex].radius +
                 canvas.offsetTop
           ) {
+            console.log("Player clicked");
             players[currentPlayerIndex].x =
               e.pageX -
               canvas.offsetLeft -
@@ -140,6 +141,7 @@ window.addEventListener("DOMContentLoaded", function () {
         players[currentPlayerIndex].y =
           e.pageY - canvas.offsetTop - players[currentPlayerIndex].radius * 0.5;
         socket.emit("mouseMoved", players);
+        console.log("Player moved");
       }
     }
 
@@ -170,32 +172,30 @@ window.addEventListener("DOMContentLoaded", function () {
     let ennemiesPos;
 
     socket.on("ennemiesUpdate", (ennemiesPos) => {
-      animate(ennemiesPos);
+      ennemies = ennemiesPos;
       console.log("ennemiesPos", ennemiesPos);
-      // console.log("ennemiesPos[0].x", ennemiesPos[0].x);
     });
 
-    let time;
+    let time = 0;
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPlayer();
-      if (startTime) {
-        drawEnnemy();
-      }
+      drawEnnemy();
       // detection();
       // lostDetection();
     }
 
     function chrono() {
-      if (players.length >= 2) {
-        if (startTime) {
-          this.time += 1;
-          console.log(time);
-        }
+      if (startTime) {
+        time += 1;
+        score.innerHTML = `Vous avez tenu ${time / 100}s`;
       }
+      animate();
+      requestAnimationFrame(chrono);
     }
 
-    let action = setInterval(animate, 1000 / 30);
+    chrono();
+    // let action = setInterval(chrono, 1000 / 60);
   });
 });

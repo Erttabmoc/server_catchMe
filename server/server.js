@@ -47,15 +47,23 @@ io.on("connection", (socket) => {
     console.log("Server sent players", checkPlayers);
   }
 
+  function createEnnemies() {
+    for (let i = 0; i < 2; i++) {
+      let ennemy = new Ennemy();
+      ennemies.push(ennemy);
+    }
+    io.emit("ennemiesCreated", ennemies);
+    console.log("Server sent Ennemy");
+  }
+
   socket.on("startGame", (readyPlayers) => {
     players = readyPlayers;
     io.emit("startGame", players);
     console.log(`Player ${socket.id} is ready to play`);
-
     let anyPlayer = players.some((player) => player.ready == "false");
     console.log("anyPlayer", anyPlayer);
     if (anyPlayer == false) {
-      // createEnnemies();
+      createEnnemies();
     }
   });
 
@@ -83,15 +91,6 @@ io.on("connection", (socket) => {
     this.speedX = 1 + Math.floor(Math.random() * 4);
     this.speedY = -1 - Math.floor(Math.random() * 4);
   };
-
-  function createEnnemies() {
-    for (let i = 0; i < 3; i++) {
-      let ennemy = new Ennemy();
-      ennemies.push(ennemy);
-    }
-    io.emit("ennemiesCreated", ennemies);
-    console.log("Server sent Ennemy");
-  }
 
   function moveEnnemies() {
     ennemies.forEach((ennemy) => {
