@@ -131,3 +131,11 @@ button,
   margin-bottom: 0;
   margin-top: 10px;
 }
+
+#waitingBox {
+  display: "";
+}
+
+#playersConnected {
+  display: none;
+}

@@ -1,7 +1,7 @@
 "use strict";
 window.addEventListener("DOMContentLoaded", function () {
   console.log("Document loaded");
-  let socket = io.connect("http://localhost:8080");
+  const socket = io.connect("http://localhost:8080");
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
@@ -13,9 +13,8 @@ window.addEventListener("DOMContentLoaded", function () {
   const restartButton = document.getElementById("restartButton");
   const playButton = document.getElementById("playButton");
 
-  button.addEventListener("click", function () {
-    open("/public/20201110_CV.pdf", "Mon_CV");
-  });
+  let waitingBox = document.getElementById("waitingBox");
+  let playersConnected = document.getElementById("playersConnected");
 
   restartButton.addEventListener("click", function () {
     window.location.reload();
@@ -29,6 +28,7 @@ window.addEventListener("DOMContentLoaded", function () {
   let currentPlayerID;
   let currentPlayerIndex;
   let ennemies = [];
+  const pseudo = "Erttabmoc";
 
   socket.on("connect", function () {
     currentPlayerID = socket.id;
@@ -36,6 +36,10 @@ window.addEventListener("DOMContentLoaded", function () {
     socket.on("playersOn", function (playersFromServer) {
       players = playersFromServer;
       console.log("Client received players", players);
+      if (players.length >= 2) {
+        waitingBox.style.display = "none";
+        playersConnected.style.display = "";
+      }
     });
 
     playButton.addEventListener("click", () => {
@@ -82,6 +86,15 @@ window.addEventListener("DOMContentLoaded", function () {
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
+
+        ctx.strokeStyle = "#" + (((1 << 24) * Math.random()) | 0).toString(16);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        ctx.fillStyle = "black";
+        ctx.font = "1em Serif";
+        ctx.fillText(`${pseudo}`, x + 15, y - 15);
+
         ctx.closePath();
       });
     }
@@ -187,7 +200,31 @@ window.addEventListener("DOMContentLoaded", function () {
       // console.log("ennemiesPos", ennemiesPos);
     });
 
+    const ballsHitSound = new Audio();
+    ballsHitSound.src = "../sound/wall.mp3";
+
+    function ennemiesCrash() {
+      ennemies.forEach((ennemy) => {
+        if (
+          ennemy.x + ennemy.speedX > 600 - ennemy.radius ||
+          ennemy.x + ennemy.speedX < ennemy.radius
+        ) {
+          ballsHitSound.play();
+          console.log("ennemyCrash !");
+        }
+        if (
+          ennemy.y + ennemy.speedY > 400 - ennemy.radius ||
+          ennemy.y + ennemy.speedY < ennemy.radius
+        ) {
+          ballsHitSound.play();
+          console.log("ennemyCrash !");
+        }
+      });
+    }
+
     let lost = false;
+    const crashSound = new Audio();
+    crashSound.src = "../sound/ping.mp3";
 
     // Détection des collisions
     function detection() {
@@ -200,8 +237,8 @@ window.addEventListener("DOMContentLoaded", function () {
           distance <=
           players[currentPlayerIndex].radius + ennemies[i].radius
         ) {
-          // console.log("Launch detection !");
-          // crashSound.play();
+          console.log("playerCrash !");
+          crashSound.play();
           lost = true;
           startTime = false;
           console.log(`Player ${players[currentPlayerIndex].id} lost !`);
@@ -235,14 +272,17 @@ window.addEventListener("DOMContentLoaded", function () {
       drawEnnemy();
       detection();
       lostDetection();
+      ennemiesCrash();
     }
 
     function chrono() {
-      if (startTime) {
-        time += 1;
-        score.innerHTML = `Vous avez tenu ${time / 100}s`;
+      if (players.length <= 2) {
+        if (startTime) {
+          time += 1;
+          score.innerHTML = `Vous avez tenu <br/> ${time / 100}s`;
+        }
+        animate();
       }
-      animate();
     }
 
     // let action = setInterval(chrono, 1000 / 60);

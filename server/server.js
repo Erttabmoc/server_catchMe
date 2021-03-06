@@ -48,7 +48,7 @@ io.on("connection", (socket) => {
   }
 
   function createEnnemies() {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 7; i++) {
       let ennemy = new Ennemy();
       ennemies.push(ennemy);
     }
@@ -92,7 +92,7 @@ io.on("connection", (socket) => {
   let Ennemy = function () {
     this.x = 30;
     this.y = 30;
-    this.color = "#" + (((1 << 24) * Math.random()) | 0).toString(16);
+    this.color = "red";
     this.radius = 5 + Math.ceil(Math.random() * 15);
     this.speedX = 1 + Math.floor(Math.random() * 4);
     this.speedY = -1 - Math.floor(Math.random() * 4);

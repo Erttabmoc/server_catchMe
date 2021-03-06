@@ -20,8 +20,9 @@
     </div>
 
     <p id="score">
-      Cliquez sur la boule et déplacer la pour éviter la collision avec les
-      boules rouges qui vont apparaître successivement.
+      1. Cliquez sur le boutton Play lorsque vous êtes prêt. <br />
+      2. Cliquez sur votre boule pour la déplacer afin d'éviter la collision
+      avec les boules ennemies qui sont en rouge.
     </p>
 
     <div class="game">
@@ -33,33 +34,12 @@
     </div>
 
     <div id="players">
-      <h2>Waiting for player !</h3>
-      <div class="login">
-        Login to play :
-        <form>
-          <input
-            type="text"
-            class="inputForm"
-            placeholder="Pseudonyme"
-            required
-          />
-          <input class="joinButton" type="button" value="Join" />
-        </form>
+      <div id="waitingBox">
+        <h2>Waiting for other Players !</h2>
       </div>
-      <div id="playersBox">
-        <h2>Players currently online :</h3>
-        <table id="playersList"></table>
-      </div>
-    </div>
-
-    <div id="looser">
-      <p>
-        Oseriez-vous vous confronter à mon jeu ?<br />Vous avez toujours le
-        choix de visualiser en ligne ou télécharger mon CV :)
-      </p>
-      <button id="button">Cliquez ici</button>
-      <div>
-        <a href="/misc/20201110_CV.pdf" download>Téléchargement</a>
+      <div id="playersConnected">
+        <h2>Players currently online :</h2>
+        <ol id="playersOnline"></ol>
       </div>
     </div>
 
