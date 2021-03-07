@@ -4,7 +4,7 @@ const playerSchema = require("./objModel");
 
 mongoose
   .connect(
-    "mongodb+srv://server_catchMe:At0i22e45mdb@cluster0.mlab6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "mongodb+srv://server_catchMe:xyz@cluster0.mlab6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))

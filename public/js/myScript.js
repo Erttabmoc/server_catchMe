@@ -15,6 +15,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   let waitingBox = document.getElementById("waitingBox");
   let playersConnected = document.getElementById("playersConnected");
+  let playersOnline = document.getElementById("playersOnline");
 
   restartButton.addEventListener("click", function () {
     window.location.reload();
@@ -27,6 +28,7 @@ window.addEventListener("DOMContentLoaded", function () {
   let players = [];
   let currentPlayerID;
   let currentPlayerIndex;
+
   let ennemies = [];
   const pseudo = "Erttabmoc";
 
@@ -38,7 +40,12 @@ window.addEventListener("DOMContentLoaded", function () {
       console.log("Client received players", players);
       if (players.length >= 2) {
         waitingBox.style.display = "none";
-        playersConnected.style.display = "";
+        playersConnected.style.display = "list-item";
+        for (let i = 0; i < players.length; i++) {
+          let createElement = document.createElement("li");
+          createElement.innerHTML = players[i].id;
+          playersOnline.appendChild(createElement);
+        }
       }
     });
 
@@ -47,6 +54,7 @@ window.addEventListener("DOMContentLoaded", function () {
         if (players[i].id == currentPlayerID) {
           currentPlayerIndex = i;
           players[currentPlayerIndex].ready = "true";
+          hidePlayButton();
           socket.emit("playerReady", players);
           console.log(`Player ${currentPlayerID} is ready to play`);
         }
@@ -67,7 +75,7 @@ window.addEventListener("DOMContentLoaded", function () {
       );
       // console.log("anyPlayer", anyPlayer);
       if (anyPlayer == false) {
-        hidePlayButton();
+        // hidePlayButton();
         socket.emit("startChrono");
         console.log("Les lions sont relachés !");
         console.log("Les lions sont relachés !");
@@ -93,7 +101,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
         ctx.fillStyle = "black";
         ctx.font = "1em Serif";
-        ctx.fillText(`${pseudo}`, x + 15, y - 15);
+        ctx.fillText(`${players[currentPlayerIndex].user}`, x + 15, y - 15);
 
         ctx.closePath();
       });
@@ -241,7 +249,7 @@ window.addEventListener("DOMContentLoaded", function () {
           crashSound.play();
           lost = true;
           startTime = false;
-          console.log(`Player ${players[currentPlayerIndex].id} lost !`);
+          console.log(`Player ${players[currentPlayerIndex].user} lost !`);
         }
       }
     }
@@ -259,7 +267,7 @@ window.addEventListener("DOMContentLoaded", function () {
     // Game over
     function lostDetection() {
       if (lost) {
-        drawMessage(`Ahah! Player ${players[currentPlayerIndex].id} lost!`);
+        drawMessage(`Ahah! ${players[currentPlayerIndex].user} lost!`);
         clearInterval(action);
       }
     }

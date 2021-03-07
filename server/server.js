@@ -4,7 +4,8 @@ const express = require("express");
 const http = require("http");
 const socketio = require("socket.io");
 const process = require("process");
-const { emit } = require("process");
+const bodyParser = require("body-parser");
+// const Score = require("./score");
 
 const publicPath = path.join(__dirname, "/../public");
 const PORT = process.env.PORT || 8080;
@@ -13,7 +14,27 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
+// app.use(bodyParser.urlencoded({ extended: true }));
+// let username;
+
+// app.get("/", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../public/login.html"));
+// });
+
+// app.post("/game", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../public/index.html"));
+//   username = req.body.username;
+// });
+
 app.use(express.static(publicPath));
+
+// app.get("/registration", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../public/registration.html"));
+// });
+
+// app.post("/login", (req, res) => {
+//   User.findOne();
+// });
 
 server.listen(PORT, function () {
   console.log(`Serveur connecté sur le port ${PORT}`);
@@ -32,11 +53,17 @@ io.on("connection", (socket) => {
     radius: 15,
     color: "#" + (((1 << 24) * Math.random()) | 0).toString(16),
     ready: "false",
+    user: "",
   };
 
   socket.on("disconnect", function () {
     console.log(`Player ${socket.id} disconnected`);
-    delete players[socket.id];
+    let disconnectPlayer = players.some((player) => player.id == socket.id);
+    if (disconnectPlayer == socket.id) {
+      delete players[socket.id];
+      // players = players.filter((p) => p.id !== socket.id);
+      io.emit("playersUpdate", players);
+    }
   });
 
   update();
@@ -44,11 +71,12 @@ io.on("connection", (socket) => {
   function update() {
     let checkPlayers = Object.values(players);
     io.emit("playersOn", checkPlayers);
-    // console.log("Server sent players", checkPlayers);
+    console.log("Server sent players", checkPlayers);
+    console.log("players", players);
   }
 
   function createEnnemies() {
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 1; i++) {
       let ennemy = new Ennemy();
       ennemies.push(ennemy);
     }
