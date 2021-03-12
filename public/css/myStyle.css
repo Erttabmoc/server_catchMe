@@ -1,3 +1,4 @@
+/* game.html */
 body {
   background: white;
 }
@@ -25,11 +26,28 @@ h1 {
   text-align: center;
 }
 
+.catchMe {
+  text-align: center;
+}
+
 h2 {
   color: rgb(49, 51, 223);
   font-size: 20px;
   font-style: italic;
   text-align: center;
+  margin-top: 10px;
+}
+
+#waitingBox {
+  display: "";
+}
+
+#playersConnected {
+  display: none;
+}
+
+li {
+  list-style-type: none;
 }
 
 #score {
@@ -76,8 +94,15 @@ canvas {
   transform: scale(1.1);
 }
 
-.catchMe {
-  text-align: center;
+.joinButton {
+  background: #00458d;
+  border-radius: 5px;
+  border: solid 5px #0085c6;
+  color: white;
+  font-size: 20px;
+  padding: 5px;
+  margin-bottom: 5px;
+  font-family: "Times New Roman";
 }
 
 #players {
@@ -93,19 +118,20 @@ canvas {
   margin-bottom: 10px;
 }
 
-#looser {
+/* index.html */
+h1,
+form {
   width: auto;
-  background: white;
-  padding-bottom: 10px;
+  background: #0085c6;
+  padding: 2px;
   border-radius: 10px;
-  border: solid 5px #dadada;
-  color: darkgrey;
-  font-size: 20px;
+  border: solid 6px #00458d;
+  color: white;
+  font-size: 25px;
   text-align: center;
 }
 
-button,
-.joinButton {
+button {
   background: #00458d;
   border-radius: 5px;
   border: solid 5px #0085c6;
@@ -114,28 +140,4 @@ button,
   padding: 5px;
   margin-bottom: 5px;
   font-family: "Times New Roman";
-}
-
-.inputForm {
-  border-radius: 5px;
-  border: solid 5px #0085c6;
-  color: rgb(49, 51, 223);
-  font-size: 20px;
-  padding: 5px;
-  margin-top: 5px;
-  font-family: "Times New Roman";
-}
-
-#looser > p {
-  padding-bottom: 10px;
-  margin-bottom: 0;
-  margin-top: 10px;
-}
-
-#waitingBox {
-  display: "";
-}
-
-#playersConnected {
-  display: none;
 }

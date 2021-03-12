@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>IFOCOP MULTIJOUEUR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="/css/myStyle.css" />
+  </head>
+
+  <body>
+    <h1>Bienvenue sur ma page de présentation de mon CV</h1>
+
+    <p id="myWord">
+      Knowing is not enough, we must apply. Willing is not enough, we must do.
+    </p>
+
+    <div class="catchMe">
+      <img src="/img/catchMe.png" alt="Logo showing CatchMe" />
+    </div>
+
+    <div id="players">
+      <div id="waitingBox">
+        <h2>Waiting for other Players !</h2>
+      </div>
+      <div id="playersConnected">
+        <h2>Players currently online :</h2>
+        <div><ul id="playersOnline"></ul></div>
+      </div>
+    </div>
+
+    <p id="score">
+      1. Cliquez sur le bouton Play lorsque vous êtes prêt. <br />
+      2. Cliquez sur votre boule pour la déplacer afin d'éviter la collision
+      avec les boules ennemies qui sont en rouge.
+    </p>
+
+    <div class="game">
+      <canvas id="canvas"></canvas>
+      <div>
+        <img id="restartButton" src="/img/restart.jpg" alt="A restart button" />
+        <img id="playButton" src="/img/play.jpg" alt="A play button" />
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/myScript.js"></script>
+    <noscript>Veuillez activer JavaScript</noscript>
+  </body>
+</html>
